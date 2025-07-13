@@ -1,0 +1,19 @@
+import joblib
+import os
+import pandas as pd
+
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
+model = joblib.load(MODEL_PATH)
+
+def predict_category(data: list[dict]) -> list[dict]:
+    """
+    data: lista de diccionarios con claves:
+          category, partial_sum, day_of_fortnight, percent_of_fortnight, avg_daily_spending_so_far, days_left_in_fortnight
+    Retorna: lista con predicciones
+    """
+    df = pd.DataFrame(data)
+    preds = model.predict(df)
+    return [
+        {"category": row["category"], "prediction": float(pred)}
+        for row, pred in zip(data, preds)
+    ]
