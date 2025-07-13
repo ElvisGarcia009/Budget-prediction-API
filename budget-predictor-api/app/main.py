@@ -1,20 +1,24 @@
 from fastapi import FastAPI
-from app.schemas.tx import TxItem
-from app.core.utils import prepare_features
-import joblib
-import pandas as pd
+from typing import List
+
+# Importa tu nuevo esquema de features
+from app.schemas.feature import FeatureItem  
+# Importa la función que hace la predicción
+from app.model.predictor import predict_category  
 
 app = FastAPI()
-model = joblib.load("app/model/model.pkl")
+
+# Carga el modelo (ya en predictor.py)
+# model = joblib.load("app/model/model.pkl")  ← se queda en predictor.py
 
 @app.get("/")
 def root():
     return {"message": "Budget Predictor API - OK"}
 
 @app.post("/predict")
-def predict(transactions: list[TxItem]):
-    df = pd.DataFrame([t.dict() for t in transactions])
-    X_pred = prepare_features(df)
-    y_pred = model.predict(X_pred)
-
-    return [{"category": cat, "prediction": float(pred)} for cat, pred in zip(X_pred["category"], y_pred)]
+def predict(features: List[FeatureItem]):
+    # Convierte la lista de FeatureItem a lista de dicts
+    data = [f.dict() for f in features]
+    # Llama a la función que retorna [{"category": ..., "prediction": ...}, ...]
+    results = predict_category(data)
+    return {"predictions": results}
